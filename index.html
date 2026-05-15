@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="layout">
+<div class="app">
+  <h1>My Tasks</h1>
+  <p class="subtitle">Stay on top of what matters.</p>
+
+  <div class="add-row">
+    <form class="add-form" id="add-form">
+      <input type="text" id="new-task-input" placeholder="Add a new task…" autocomplete="off" />
+      <button type="submit" class="btn-add">+ Add</button>
+    </form>
+    <div class="settings-wrap">
+      <button class="btn-cog" id="btn-cog" type="button" title="Settings">⚙</button>
+      <div class="settings-panel" id="settings-panel">
+        <p class="settings-label">Appearance</p>
+        <div class="theme-options">
+          <button class="theme-btn" data-theme-val="light">☀ Light</button>
+          <button class="theme-btn" data-theme-val="dark">☽ Dark</button>
+        </div>
+        <p class="settings-label" style="margin-top: 14px;">Data</p>
+        <div class="data-options">
+          <button class="data-btn" id="btn-export-copy">↓ Export</button>
+          <button class="data-btn" id="btn-export-overwrite">↓ Overwrite</button>
+        </div>
+        <div class="data-options" style="margin-top: 6px;">
+          <button class="data-btn" id="btn-import">↑ Import</button>
+        </div>
+        <input type="file" id="import-file" accept=".json" style="display:none" />
+      </div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="active">Active</button>
+    <button class="filter-btn" data-filter="done">Done</button>
+  </div>
+
+  <p class="stats" id="stats"></p>
+
+  <ul id="task-list"></ul>
+
+  <div class="empty-state" id="empty-state" style="display:none">
+    <div class="icon">✅</div>
+    <p>Nothing here. Add a task above!</p>
+  </div>
+</div>
+
+  <aside class="notes-panel">
+    <h2 class="notes-heading">📝 Quick Notes</h2>
+    <div class="notes-toolbar">
+      <button class="notes-btn" id="notes-btn-bold" title="Bold (Ctrl+B)"><b>B</b></button>
+      <button class="notes-btn" id="notes-btn-indent" title="Indent (Tab)">⇥</button>
+    </div>
+    <div id="notes-input" class="notes-textarea" contenteditable="true" spellcheck="false" data-placeholder="Jot something down…"></div>
+    <p class="notes-footer" id="notes-footer"></p>
+  </aside>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
