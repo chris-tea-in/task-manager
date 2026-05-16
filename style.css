@@ -205,7 +205,8 @@ h1 {
   transition: all 0.15s;
 }
 
-.data-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-faint); }
+.data-btn:hover  { border-color: var(--accent); color: var(--accent); background: var(--accent-faint); }
+.data-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 /* Filters */
 .filters {
@@ -396,6 +397,74 @@ h1 {
 .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
 .empty-state p { font-size: 0.95rem; }
 
+/* ─── Activity log panel ───────────────────────────────────────────────────── */
+.log-panel {
+  display: none;
+  flex-basis: 240px;
+  flex-shrink: 1;
+  min-width: 180px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 4px var(--shadow);
+  position: sticky;
+  top: 40px;
+  max-height: calc(100vh - 80px);
+  flex-direction: column;
+  transition: background-color 0.25s, box-shadow 0.2s;
+}
+
+.layout.log-open .log-panel {
+  display: flex;
+}
+
+.log-panel:hover { box-shadow: 0 3px 10px var(--shadow-hover); }
+
+.log-heading {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 14px;
+  flex-shrink: 0;
+  transition: color 0.25s;
+}
+
+.log-list {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.log-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.log-entry:last-child { border-bottom: none; }
+
+.log-time {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.log-msg {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.log-empty {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
 /* ─── Notes panel ──────────────────────────────────────────────────────────── */
 .notes-panel {
   flex-basis: 33%;
@@ -483,8 +552,168 @@ h1 {
   min-height: 1.2em;
 }
 
+/* ─── Lists bar ────────────────────────────────────────────────────────────── */
+.lists-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.list-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.list-tab:hover { border-color: var(--accent); color: var(--accent); }
+
+.list-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.list-tab-delete {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0 0 2px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+
+.list-tab-delete:hover { opacity: 1; }
+
+.list-edit-toggle {
+  padding: 6px 12px;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.list-edit-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+.list-edit-toggle.active {
+  background: var(--accent-faint);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.list-add-input {
+  padding: 5px 12px;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  outline: none;
+  width: 140px;
+  transition: border-color 0.2s, background-color 0.25s, color 0.25s;
+}
+
+.list-add-input:focus { border-color: var(--accent); }
+.list-add-input::placeholder { color: var(--placeholder); }
+
+.list-add-submit {
+  padding: 6px 12px;
+  border: 2px solid var(--accent);
+  border-radius: 20px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.list-add-submit:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.list-tab-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  width: 90px;
+  min-width: 40px;
+}
+
+/* ─── Delete-list modal ────────────────────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 28px 24px 20px;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.25s;
+}
+
+.modal-message {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  line-height: 1.5;
+  transition: color 0.25s;
+}
+
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+.modal-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.modal-cancel { background: var(--card-bg); color: var(--text-secondary); }
+.modal-cancel:hover { border-color: var(--accent); color: var(--accent); }
+
+.modal-confirm { background: #e74c3c; border-color: #e74c3c; color: #fff; }
+.modal-confirm:hover { background: #c0392b; border-color: #c0392b; }
+
 @media (max-width: 700px) {
   body { padding: 24px 12px; }
   .layout { flex-direction: column; gap: 16px; }
   .notes-panel { flex-basis: auto; width: 100%; position: static; }
+  .log-panel { flex-basis: auto; width: 100%; position: static; max-height: 260px; order: 3; }
 }
