@@ -1,0 +1,117 @@
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 4px var(--shadow);
+  transition: box-shadow 0.2s, background-color 0.25s, opacity 0.15s;
+  list-style: none;
+}
+
+.item:hover { box-shadow: 0 3px 10px var(--shadow-hover); }
+
+.dragging { opacity: 0.35; }
+
+.dragHandle {
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  padding: 0 2px;
+  flex-shrink: 0;
+  user-select: none;
+  touch-action: none;
+}
+
+.dragHandle:active { cursor: grabbing; }
+
+.checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.checkbox:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.text {
+  flex: 1;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  word-break: break-word;
+  transition: color 0.2s;
+}
+
+.text.done {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.editInput {
+  flex: 1;
+  border: none;
+  border-bottom: 2px solid var(--accent);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  outline: none;
+  background: transparent;
+  padding: 2px 0;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.item:hover .actions,
+.item.isEditing .actions { opacity: 1; }
+
+.btnIcon {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btnIcon:active { transform: scale(0.92); }
+
+.btnEdit   { background: var(--accent-faint); color: var(--accent); }
+.btnEdit:hover  { background: var(--accent-faint-hover); }
+
+.btnSave   { background: #e6f9f0; color: #2ecc71; }
+.btnSave:hover  { background: #ccf0e0; }
+
+.btnDelete { background: #fff0f0; color: #e74c3c; }
+.btnDelete:hover { background: #ffe0e0; }

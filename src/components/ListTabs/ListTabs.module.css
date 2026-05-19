@@ -1,0 +1,109 @@
+.bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.tab:hover { border-color: var(--accent); color: var(--accent); }
+
+.tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.tabName { cursor: pointer; }
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0 0 2px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+
+.deleteBtn:hover { opacity: 1; }
+
+.renameInput {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  width: 90px;
+  min-width: 40px;
+}
+
+.newRow {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.newInput {
+  padding: 5px 12px;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  outline: none;
+  width: 130px;
+  transition: border-color 0.2s;
+}
+
+.newInput:focus { border-color: var(--accent); }
+.newInput::placeholder { color: var(--placeholder); }
+
+.addSubmit {
+  padding: 6px 12px;
+  border: 2px solid var(--accent);
+  border-radius: 20px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.addSubmit:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.addBtn {
+  padding: 6px 12px;
+  border: 2px dashed var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.addBtn:hover { border-color: var(--accent); color: var(--accent); }

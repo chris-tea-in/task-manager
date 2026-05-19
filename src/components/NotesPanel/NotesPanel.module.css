@@ -1,0 +1,113 @@
+.panel {
+  flex-shrink: 0;
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 20px;
+  padding-left: 26px;
+  box-shadow: 0 1px 4px var(--shadow);
+  position: sticky;
+  top: 40px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  transition: background-color 0.25s, box-shadow 0.2s;
+  min-width: 200px;
+  max-width: 600px;
+}
+
+.panel:hover { box-shadow: 0 3px 10px var(--shadow-hover); }
+
+.dragHandle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  border-radius: 16px 0 0 16px;
+  transition: background 0.15s;
+}
+
+.dragHandle:hover {
+  background: var(--accent-faint);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.heading {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  transition: color 0.25s;
+}
+
+.savedBadge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.listLabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  transition: color 0.25s;
+}
+
+.toolbar {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.toolBtn {
+  padding: 4px 10px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.5;
+  transition: all 0.15s;
+}
+
+.toolBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-faint);
+}
+
+.toolBtn.toolActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.editorWrap {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--bg);
+  min-height: 240px;
+  transition: border-color 0.2s, background-color 0.25s;
+  cursor: text;
+}
+
+.editorWrap:focus-within { border-color: var(--accent); }
+
+@media (max-width: 700px) {
+  .panel {
+    position: static;
+    width: 100% !important;
+    max-height: none;
+  }
+
+  .dragHandle { display: none; }
+}
