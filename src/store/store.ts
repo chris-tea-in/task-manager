@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { arrayMove } from '@dnd-kit/sortable';
-import type { Task, List, Filter, Theme, LogEntry } from './types';
+import type { Task, List, NoteTab, Filter, Theme, LogEntry } from './types';
 
 interface AppState {
   lists: List[];
@@ -29,7 +29,11 @@ interface AppActions {
   setActiveList: (listId: number) => void;
   setFilter: (filter: Filter) => void;
   setTheme: (theme: Theme) => void;
-  updateNotes: (listId: number, notes: string) => void;
+  updateNoteTabContent: (listId: number, tabId: string, content: string) => void;
+  addNoteTab: (listId: number) => void;
+  deleteNoteTab: (listId: number, tabId: string) => void;
+  renameNoteTab: (listId: number, tabId: string, title: string) => void;
+  setActiveNoteTab: (listId: number, tabId: string) => void;
   setNotesWidth: (width: number) => void;
   setLogOpen: (open: boolean) => void;
   importData: (data: unknown) => void;
@@ -38,7 +42,50 @@ interface AppActions {
 type Store = AppState & AppActions;
 
 const DEFAULT_ID = 1;
-const DEFAULT_LIST: List = { id: DEFAULT_ID, name: 'My Tasks', tasks: [], notes: '' };
+
+function makeDefaultTab(content = ''): NoteTab {
+  return { id: String(Date.now() + Math.random()), title: 'Notes', content };
+}
+
+function makeDefaultList(id: number, name: string): List {
+  const tab = makeDefaultTab();
+  return { id, name, tasks: [], noteTabs: [tab], activeNoteTabId: tab.id };
+}
+
+// Converts a raw list object (old or new format) to the current List shape.
+// Used by both the Zustand migrate function and importData.
+function migrateRawList(raw: Record<string, unknown>): List {
+  let noteTabs: NoteTab[];
+  let activeNoteTabId: string;
+
+  if (Array.isArray(raw.noteTabs) && raw.noteTabs.length > 0) {
+    noteTabs = (raw.noteTabs as Record<string, unknown>[]).map((t) => ({
+      id: String(t.id || Date.now() + Math.random()),
+      title: String(t.title || 'Notes'),
+      content: typeof t.content === 'string' ? t.content : '',
+    }));
+    activeNoteTabId =
+      noteTabs.find((t) => t.id === String(raw.activeNoteTabId))?.id ?? noteTabs[0].id;
+  } else {
+    const tab = makeDefaultTab(typeof raw.notes === 'string' ? raw.notes : '');
+    noteTabs = [tab];
+    activeNoteTabId = tab.id;
+  }
+
+  return {
+    id: Number(raw.id) || Date.now(),
+    name: String(raw.name || 'Imported List'),
+    tasks: Array.isArray(raw.tasks)
+      ? (raw.tasks as Record<string, unknown>[]).map((t) => ({
+          id: Number(t.id) || Date.now(),
+          text: String(t.text || ''),
+          done: Boolean(t.done),
+        }))
+      : [],
+    noteTabs,
+    activeNoteTabId,
+  };
+}
 
 function logEntry(message: string): LogEntry {
   return {
@@ -51,6 +98,8 @@ function logEntry(message: string): LogEntry {
 function prependLog(entry: LogEntry, log: LogEntry[]): LogEntry[] {
   return [entry, ...log].slice(0, 50);
 }
+
+const DEFAULT_LIST = makeDefaultList(DEFAULT_ID, 'My Tasks');
 
 export const useStore = create<Store>()(
   persist(
@@ -137,7 +186,7 @@ export const useStore = create<Store>()(
       addList: (name) => {
         const trimmed = name.trim();
         if (!trimmed) return;
-        const newList: List = { id: Date.now(), name: trimmed, tasks: [], notes: '' };
+        const newList = makeDefaultList(Date.now(), trimmed);
         set((s) => ({
           lists: [...s.lists, newList],
           activeListId: newList.id,
@@ -185,9 +234,54 @@ export const useStore = create<Store>()(
         set({ theme });
       },
 
-      updateNotes: (listId, notes) => {
+      updateNoteTabContent: (listId, tabId, content) => {
         set((s) => ({
-          lists: s.lists.map((l) => (l.id === listId ? { ...l, notes } : l)),
+          lists: s.lists.map((l) =>
+            l.id === listId
+              ? { ...l, noteTabs: l.noteTabs.map((t) => (t.id === tabId ? { ...t, content } : t)) }
+              : l
+          ),
+        }));
+      },
+
+      addNoteTab: (listId) => {
+        const tab: NoteTab = { id: String(Date.now() + Math.random()), title: 'New tab', content: '' };
+        set((s) => ({
+          lists: s.lists.map((l) =>
+            l.id === listId
+              ? { ...l, noteTabs: [...l.noteTabs, tab], activeNoteTabId: tab.id }
+              : l
+          ),
+        }));
+      },
+
+      deleteNoteTab: (listId, tabId) => {
+        set((s) => ({
+          lists: s.lists.map((l) => {
+            if (l.id !== listId) return l;
+            const remaining = l.noteTabs.filter((t) => t.id !== tabId);
+            const newActiveId =
+              l.activeNoteTabId === tabId ? (remaining[0]?.id ?? '') : l.activeNoteTabId;
+            return { ...l, noteTabs: remaining, activeNoteTabId: newActiveId };
+          }),
+        }));
+      },
+
+      renameNoteTab: (listId, tabId, title) => {
+        const trimmed = title.trim();
+        if (!trimmed) return;
+        set((s) => ({
+          lists: s.lists.map((l) =>
+            l.id === listId
+              ? { ...l, noteTabs: l.noteTabs.map((t) => (t.id === tabId ? { ...t, title: trimmed } : t)) }
+              : l
+          ),
+        }));
+      },
+
+      setActiveNoteTab: (listId, tabId) => {
+        set((s) => ({
+          lists: s.lists.map((l) => (l.id === listId ? { ...l, activeNoteTabId: tabId } : l)),
         }));
       },
 
@@ -201,18 +295,7 @@ export const useStore = create<Store>()(
           if (!Array.isArray(raw.lists)) throw new Error('Unrecognized format');
 
           let filter: Filter = 'all';
-          const lists: List[] = (raw.lists as Record<string, unknown>[]).map((l) => ({
-            id: Number(l.id) || Date.now(),
-            name: String(l.name || 'Imported List'),
-            tasks: Array.isArray(l.tasks)
-              ? (l.tasks as Record<string, unknown>[]).map((t) => ({
-                  id: Number(t.id) || Date.now(),
-                  text: String(t.text || ''),
-                  done: Boolean(t.done),
-                }))
-              : [],
-            notes: typeof l.notes === 'string' ? l.notes : '',
-          }));
+          const lists = (raw.lists as Record<string, unknown>[]).map(migrateRawList);
 
           if (lists.length === 0) throw new Error('Empty lists');
 
@@ -221,7 +304,13 @@ export const useStore = create<Store>()(
           if (['all', 'active', 'done'].includes(String(raw.filter))) filter = raw.filter as Filter;
 
           const { log, importVersion } = get();
-          set({ lists, activeListId, filter, importVersion: importVersion + 1, log: prependLog(logEntry('Data imported'), log) });
+          set({
+            lists,
+            activeListId,
+            filter,
+            importVersion: importVersion + 1,
+            log: prependLog(logEntry('Data imported'), log),
+          });
         } catch {
           /* invalid file — do nothing */
         }
@@ -229,6 +318,17 @@ export const useStore = create<Store>()(
     }),
     {
       name: 'task-manager-v2',
+      version: 1,
+      migrate: (persistedState, version) => {
+        if (version === 0) {
+          const old = persistedState as Record<string, unknown>;
+          const lists = Array.isArray(old.lists)
+            ? (old.lists as Record<string, unknown>[]).map(migrateRawList)
+            : [DEFAULT_LIST];
+          return { ...old, lists };
+        }
+        return persistedState as Store;
+      },
       partialize: (s) => ({
         lists: s.lists,
         activeListId: s.activeListId,
@@ -242,16 +342,11 @@ export const useStore = create<Store>()(
   )
 );
 
-// Helper called by both deleteList and confirmDeleteList
 function _performDelete(listId: number, listName: string) {
   useStore.setState((s) => {
     const remaining = s.lists.filter((l) => l.id !== listId);
-    const finalLists =
-      remaining.length > 0
-        ? remaining
-        : [{ id: Date.now(), name: 'My Tasks', tasks: [], notes: '' }];
-    const newActiveId =
-      s.activeListId === listId ? finalLists[0].id : s.activeListId;
+    const finalLists = remaining.length > 0 ? remaining : [makeDefaultList(Date.now(), 'My Tasks')];
+    const newActiveId = s.activeListId === listId ? finalLists[0].id : s.activeListId;
     return {
       lists: finalLists,
       activeListId: newActiveId,

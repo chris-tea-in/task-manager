@@ -6,39 +6,42 @@ import { useResizable } from '../../hooks/useResizable';
 import styles from './NotesPanel.module.css';
 
 export default function NotesPanel() {
-  const lists        = useStore((s) => s.lists);
-  const activeListId = useStore((s) => s.activeListId);
-  const updateNotes  = useStore((s) => s.updateNotes);
+  const lists                = useStore((s) => s.lists);
+  const activeListId         = useStore((s) => s.activeListId);
+  const updateNoteTabContent = useStore((s) => s.updateNoteTabContent);
+  const addNoteTab           = useStore((s) => s.addNoteTab);
+  const deleteNoteTab        = useStore((s) => s.deleteNoteTab);
+  const renameNoteTab        = useStore((s) => s.renameNoteTab);
+  const setActiveNoteTab     = useStore((s) => s.setActiveNoteTab);
+  const importVersion        = useStore((s) => s.importVersion);
   const { panelRef, notesWidth, onDragHandleMouseDown } = useResizable();
 
-  const importVersion = useStore((s) => s.importVersion);
-  const activeList = lists.find((l) => l.id === activeListId);
+  const activeList      = lists.find((l) => l.id === activeListId);
+  const activeNoteTabId = activeList?.activeNoteTabId ?? '';
+  const activeTab       = activeList?.noteTabs.find((t) => t.id === activeNoteTabId);
+
   const [saveIndicator, setSaveIndicator] = useState(false);
+  const [renamingTabId, setRenamingTabId] = useState<string | null>(null);
+  const [renameValue, setRenameValue]     = useState('');
 
   const saveTimer      = useRef<ReturnType<typeof setTimeout> | null>(null);
   const indicatorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // These refs mean the update handler always reads the current list ID and
-  // action without being recreated on every render.
-  const activeListIdRef = useRef(activeListId);
-  const updateNotesRef  = useRef(updateNotes);
-  // Suppresses the save that fires when we programmatically load a new list's
-  // content into the editor on list switch.
-  const suppressRef = useRef(false);
+  const activeListIdRef          = useRef(activeListId);
+  const activeNoteTabIdRef       = useRef(activeNoteTabId);
+  const updateNoteTabContentRef  = useRef(updateNoteTabContent);
+  const suppressRef              = useRef(false);
 
-  useEffect(() => { activeListIdRef.current = activeListId; },  [activeListId]);
-  useEffect(() => { updateNotesRef.current  = updateNotes;  },  [updateNotes]);
+  useEffect(() => { activeListIdRef.current         = activeListId;         }, [activeListId]);
+  useEffect(() => { activeNoteTabIdRef.current      = activeNoteTabId;      }, [activeNoteTabId]);
+  useEffect(() => { updateNoteTabContentRef.current = updateNoteTabContent; }, [updateNoteTabContent]);
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: activeList?.notes ?? '',
-    // onUpdate is intentionally omitted here — using useEditor options creates
-    // a stale closure that captures activeListId once and never updates.
-    // Instead we subscribe via editor.on('update') in the effect below.
+    content: activeTab?.content ?? '',
   });
 
-  // Subscribe to editor updates. Re-runs only when editor instance changes.
-  // Reads activeListId and updateNotes through refs so they are always current.
+  // Subscribe to editor updates via ref to avoid stale closures.
   useEffect(() => {
     if (!editor) return;
 
@@ -46,7 +49,11 @@ export default function NotesPanel() {
       if (suppressRef.current) return;
       if (saveTimer.current) clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(() => {
-        updateNotesRef.current(activeListIdRef.current, editor.getHTML());
+        updateNoteTabContentRef.current(
+          activeListIdRef.current,
+          activeNoteTabIdRef.current,
+          editor.getHTML()
+        );
         setSaveIndicator(true);
         if (indicatorTimer.current) clearTimeout(indicatorTimer.current);
         indicatorTimer.current = setTimeout(() => setSaveIndicator(false), 1500);
@@ -57,13 +64,21 @@ export default function NotesPanel() {
     return () => { editor.off('update', handleUpdate); };
   }, [editor]);
 
-  // Load the active list's notes into the editor whenever the list changes.
+  // Reload editor content on list switch, tab switch, or import.
+  // Also cancels any pending save so stale content can't overwrite the new tab.
   useEffect(() => {
     if (!editor) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
     suppressRef.current = true;
-    editor.commands.setContent(activeList?.notes ?? '');
+    editor.commands.setContent(activeTab?.content ?? '');
     requestAnimationFrame(() => { suppressRef.current = false; });
-  }, [activeListId, importVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeListId, activeNoteTabId, importVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleTabRenameCommit(tabId: string) {
+    const trimmed = renameValue.trim();
+    if (trimmed) renameNoteTab(activeListId, tabId, trimmed);
+    setRenamingTabId(null);
+  }
 
   return (
     <div
@@ -79,6 +94,44 @@ export default function NotesPanel() {
       </div>
 
       <p className={styles.listLabel}>{activeList?.name}</p>
+
+      <div className={styles.tabBar}>
+        {activeList?.noteTabs.map((tab) => (
+          <div
+            key={tab.id}
+            className={`${styles.noteTab} ${tab.id === activeNoteTabId ? styles.activeTab : ''}`}
+            onClick={() => { if (renamingTabId !== tab.id) setActiveNoteTab(activeListId, tab.id); }}
+            onDoubleClick={() => { setRenamingTabId(tab.id); setRenameValue(tab.title); }}
+          >
+            {renamingTabId === tab.id ? (
+              <input
+                className={styles.tabRenameInput}
+                value={renameValue}
+                autoFocus
+                onChange={(e) => setRenameValue(e.target.value)}
+                onBlur={() => handleTabRenameCommit(tab.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleTabRenameCommit(tab.id);
+                  if (e.key === 'Escape') setRenamingTabId(null);
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <span>{tab.title}</span>
+            )}
+            {(activeList.noteTabs.length) > 1 && (
+              <button
+                className={styles.tabDeleteBtn}
+                title="Delete tab"
+                onClick={(e) => { e.stopPropagation(); deleteNoteTab(activeListId, tab.id); }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+        ))}
+        <button className={styles.addTabBtn} onClick={() => addNoteTab(activeListId)}>+</button>
+      </div>
 
       {editor && (
         <div className={styles.toolbar}>

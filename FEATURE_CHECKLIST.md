@@ -54,6 +54,16 @@ Check off each item manually before considering a change complete.
 - [ ] Wait ~1 second after typing — "Saved" badge briefly appears
 - [ ] Switch to a different list — notes area shows that list's notes (different content)
 - [ ] Switch back — original notes are still there
+- [ ] Click the + button — a new "New tab" tab is created and becomes active
+- [ ] Click a tab — switches to that tab (editor shows its content)
+- [ ] Switch tabs — each tab holds its own independent content
+- [ ] Hover over a tab — × delete button appears; move away — it disappears
+- [ ] Click × on a tab (with multiple tabs) — tab is removed; adjacent tab becomes active
+- [ ] × button is not shown when only one tab exists
+- [ ] Double-click a tab title — enters rename mode
+- [ ] While renaming: press Enter — saves new title (empty title is rejected, original restored)
+- [ ] While renaming: press Escape — cancels, original title unchanged
+- [ ] While renaming: click away (blur) — saves new title
 - [ ] Bold button (or Ctrl+B) — toggles bold on selected text; button highlights when active
 - [ ] Italic button (or Ctrl+I) — toggles italic on selected text; button highlights when active
 - [ ] Bullet list button — toggles an unordered list; button highlights when active
@@ -76,10 +86,10 @@ Check off each item manually before considering a change complete.
 
 ## Export
 
-- [ ] Open settings, click "Copy" — JSON is copied to clipboard; settings panel closes
-- [ ] Open settings, click "Save file" — file picker opens; saving produces a valid `tasks.json`
-- [ ] Exported JSON contains: `lists` (each with `id`, `name`, `tasks`, `notes`), `activeListId`, `filter`
+- [ ] Open settings, click "Save file" — file picker opens; saving produces a valid `task-manager.json`
+- [ ] Exported JSON contains: `lists` (each with `id`, `name`, `tasks`, `noteTabs`, `activeNoteTabId`), `activeListId`, `filter`
 - [ ] Notes content is present in the exported file (type notes, wait for "Saved", then export)
+- [ ] Exporting with multiple tabs preserves all tab titles and content
 
 ---
 
@@ -124,4 +134,15 @@ Check off each item manually before considering a change complete.
 - [ ] Theme is the same after refresh
 - [ ] Notes panel width is the same after refresh
 - [ ] Activity log entries are the same after refresh (up to 50)
-- [ ] Notes content per list survives a page refresh
+- [ ] Notes content per tab per list survives a page refresh
+- [ ] Active tab per list is restored after a page refresh
+
+---
+
+## Data Migration (Development Rule)
+
+When a feature change modifies how data is stored (shape, key names, nesting):
+
+- [ ] All existing user data (tasks, notes, lists, settings) must survive the update without loss
+- [ ] If preserving existing data requires backward-compatibility shims or awkward migration code, **stop and brainstorm a cleaner approach first** before implementing anything
+- [ ] Migration logic must be verified manually: load old-format data, apply the change, confirm nothing is lost or corrupted

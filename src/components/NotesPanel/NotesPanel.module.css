@@ -102,6 +102,86 @@
 
 .editorWrap:focus-within { border-color: var(--accent); }
 
+.tabBar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-bottom: 10px;
+  scrollbar-width: none;
+}
+
+.tabBar::-webkit-scrollbar { display: none; }
+
+.noteTab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 10px;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.noteTab:hover { border-color: var(--accent); color: var(--accent); }
+
+.noteTab.activeTab {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.tabDeleteBtn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0 0 0 1px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.noteTab:hover .tabDeleteBtn { opacity: 0.7; }
+.noteTab:hover .tabDeleteBtn:hover { opacity: 1; }
+
+.tabRenameInput {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  width: 70px;
+}
+
+.addTabBtn {
+  padding: 3px 9px;
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.addTabBtn:hover { border-color: var(--accent); color: var(--accent); }
+
 @media (max-width: 700px) {
   .panel {
     position: static;

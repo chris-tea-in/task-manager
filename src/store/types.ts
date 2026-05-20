@@ -4,11 +4,18 @@ export interface Task {
   done: boolean;
 }
 
+export interface NoteTab {
+  id: string;
+  title: string;
+  content: string;
+}
+
 export interface List {
   id: number;
   name: string;
   tasks: Task[];
-  notes: string;
+  noteTabs: NoteTab[];
+  activeNoteTabId: string;
 }
 
 export type Filter = 'all' | 'active' | 'done';

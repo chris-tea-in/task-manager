@@ -20,22 +20,13 @@ export default function SettingsPanel({ onClose }: Props) {
     return JSON.stringify({ lists, activeListId, filter }, null, 2);
   }
 
-  async function handleCopyClipboard() {
-    try {
-      await navigator.clipboard.writeText(buildExport());
-      onClose();
-    } catch {
-      alert('Clipboard access denied.');
-    }
-  }
-
   async function handleSaveFile() {
     try {
       if ('showSaveFilePicker' in window) {
         const handle = await (window as Window & typeof globalThis & {
           showSaveFilePicker: (opts: object) => Promise<FileSystemFileHandle>;
         }).showSaveFilePicker({
-          suggestedName: 'tasks.json',
+          suggestedName: 'task-manager.json',
           types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
         });
         const writable = await handle.createWritable();
@@ -46,7 +37,7 @@ export default function SettingsPanel({ onClose }: Props) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'tasks.json';
+        a.download = 'task-manager.json';
         a.click();
         URL.revokeObjectURL(url);
       }
@@ -95,7 +86,6 @@ export default function SettingsPanel({ onClose }: Props) {
 
       <p className={styles.label} style={{ marginTop: 12 }}>Export</p>
       <div className={styles.group}>
-        <button className={styles.btn} onClick={handleCopyClipboard}>📋 Copy</button>
         <button className={styles.btn} onClick={handleSaveFile}>💾 Save file</button>
       </div>
 
